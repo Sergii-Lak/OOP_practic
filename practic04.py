@@ -4,7 +4,7 @@ class Cards:
     #__suits = ["Spades", "Hearts", "Clubs", "Diamonds"] # Масти - пики, червы, трефы и бубны
     #__name_cards = ["Six", "Seven", "Eight", "Nine", "Ten", "Jack", "Queen", "King", "Ace"]
     __suits = ["Пика", "Черв", "Треф", "Бубна"]  # Масти - пики, червы, трефы и бубны
-    __name_cards = ["Шест", "Семь", "Восемь", "Девять", "Десять", "Валет", "Дама", "Король", "Туз"]
+    __name_cards = ["Шесть", "Семь", "Восемь", "Девять", "Десять", "Валет", "Дама", "Король", "Туз"]
     __final_deck = {}
 
     @classmethod
@@ -38,58 +38,96 @@ class User:
     def set_cards(self, x, y):
         self.cards_user[x] = y
 
-    #TEST
     def hod(self, test_cards_user):
-        res = random.randint(1, 6)
-        print(f"Уничтожено {res} Карт")
-        for card in random.sample(test_cards_user.keys(), res):
-            del test_cards_user[card]
+        """ Ход одной картой на выбор игрока. Возвращает значение карты - список.
+                      В клссе Round ее подхватывает метод turn  """
+        cards_in_nand = test_cards_user.keys()
+        print("Ваш ход. Карты в руке: ")
+        for i in cards_in_nand:
+            print(i)
+        print("Какой картой будете ходить? Напишите название карты: ")
+        card = input()
+        while card not in cards_in_nand:
+            print("У вас нет такой карты. Напишите правильное название карты: ")
+            card = input()
+        val = test_cards_user[card]
+        del test_cards_user[card]
+        return val
 
+class AI:
+    pass
 
-class Round():
+class Round:
     __deck = Cards()
     __user = User()
+    #TEST
+    __user2 = User()
 
     def __init__(self):
         self.deck = self.__deck.shufle_deck()
         self.user_cards = self.__user.get_cards_user()
+        #Test
+        self.user2_cards = self.__user2.get_cards_user()
 
     def afish_quant_cards_deck(self):
         return len(self.deck)
 
-    def __take_card_general(self, cards_user, max_card=6):
+    def get_user1(self):
+        return self.__user
+
+    def get_user2(self):
+        return self.__user2
+
+    def __take_card_general(self, user, cards_user, max_card=6):
         for card in random.sample(self.deck.keys(), (max_card - len(cards_user))):
             val = self.deck[card]
             del self.deck[card]
-            self.__user.set_cards(card, val)
+            user.set_cards(card, val)
+            print(f"Вы взяли {card}")
         return cards_user
 
-    def start_game_card_taken(self, cards_user):
-        cards_user = self.__take_card_general(cards_user)
+    def start_game_card_taken(self, user, cards_user):
+        """ Начало игры. Раздача шести карт. Возвращает словарь """
+        cards_user = self.__take_card_general(user, cards_user)
         return cards_user
 
-    def take_cards(self, cards_user):
+    def take_cards(self, user, cards_user):
+        """ Подбор недостающих карт, если требуется"""
         if len(cards_user) < 6:
             print(f"Вы берете {6 - len(cards_user)} карты")
-            self.__take_card_general(cards_user)
+            self.__take_card_general(user, cards_user)
         elif len(cards_user) == 6:
             print("У вас 6 карт. Вы НЕ берете карты.")
         else:
             print("У Вас больше 6 карт. Вы НЕ берете карты")
 
-    #Test
-    def ggg(self):
-        self.__user.hod(self.user_cards)
+    def turn(self, user,  cards_user):
+        """ Ход одной картой на выбор игрока. Возвращает значение карты - список.
+                      В клссе User ее родитель метод hod  """
+        x = user.hod(cards_user)
+        return x
 
-    def jjj(self):
-        return  self.__user.get_cards_user()
 
 
-f = Round()
-print(f.start_game_card_taken(f.user_cards))
-print(f"in deck {f.afish_quant_cards_deck()}")
-f.ggg()
-print(f"Cart user is: {f.jjj()}")
-f.take_cards(f.user_cards)
-print(f"in deck {f.afish_quant_cards_deck()}")
-print(f"Cart user is: {f.jjj()}")
+#TEST
+
+d = Round()
+user1 = d.get_user1()
+user2 = d.get_user2()
+cards1 = d.user_cards
+cards2 = d.user2_cards
+
+d.start_game_card_taken(user1, cards1)
+print("----------------------")
+d.start_game_card_taken(user2, cards2)
+print(d.afish_quant_cards_deck())
+print(d.user_cards)
+print("--------------------")
+print(d.user2_cards)
+print(d.turn(user1, cards1))
+print(d.turn(user2, cards2))
+print(d.user_cards)
+print(d.user2_cards)
+d.take_cards(user1, cards1)
+d.take_cards(user2, cards2)
+print(d.afish_quant_cards_deck())
