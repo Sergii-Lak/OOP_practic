@@ -54,6 +54,20 @@ class User:
         del test_cards_user[card]
         return val
 
+    def card_for_beat(self):
+        """ Бьем карту игрока. Возвращает значение  карты  """
+        print("Ваши карты: ")
+        print(self.cards_user.keys())
+        card = input("Какой картой будете бить? ")
+        print(self.cards_user.keys())
+        if card in self.cards_user:
+            val = self.cards_user[card]
+            del self.cards_user[card]
+            return val
+        else:
+            print("У вас нет такой карты! Выберите карту снова: ")
+            return self.card_for_beat()
+
 class AI:
     pass
 
@@ -126,8 +140,16 @@ print("--------------------")
 print(d.user2_cards)
 print(d.turn(user1, cards1))
 print(d.turn(user2, cards2))
+print("--------------------")
 print(d.user_cards)
 print(d.user2_cards)
+d.take_cards(user1, cards1)
+d.take_cards(user2, cards2)
+print("--------------------")
+print("картой бить!!!")
+print(user1.card_for_beat())
+print(user2.card_for_beat())
+print("--------------------")
 d.take_cards(user1, cards1)
 d.take_cards(user2, cards2)
 print(d.afish_quant_cards_deck())
