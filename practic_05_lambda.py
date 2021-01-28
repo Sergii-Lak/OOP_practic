@@ -1,4 +1,4 @@
-
+import  random
 
 sequences = [10,2,8,7,5,4,3,11,0,1]
 
@@ -19,3 +19,23 @@ def ex_rec(x):
     return ex_rec(x)
 
 print(ex_rec(5))
+
+
+class P:
+
+    def __init__(self):
+        self.u = 10
+
+
+    @property
+    def my(self):
+        return self.u * 2
+
+    @my.setter
+    def my(self, w):
+        self.u -= w
+
+e = P()
+print(e.my)
+e.my = 100
+print(e.my)

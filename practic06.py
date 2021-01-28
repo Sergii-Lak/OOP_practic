@@ -1,3 +1,4 @@
+
 import random
 
 class Cards:
@@ -7,35 +8,47 @@ class Cards:
     __name_cards = ["Шесть", "Семь", "Восемь", "Девять", "Десять", "Валет", "Дама", "Король", "Туз"]
     __final_deck = {}
     __trump = random.choice(__suits)
+    __trump_list = []
 
     @classmethod
     def __deck_cards_creator(cls):
         """Эта функция создает колоду карт. Это словарь ключами которого есть название карт.
         Значения в словаре - это цифровая величина карты"""
-
         for value, name in enumerate(cls.__name_cards, 6):
             for j in cls.__suits:
                 if j == cls.__trump:
                     print(f"@@@ {j} is = {cls.__trump}")
-                    value *= 100
+                    cls.__trump_list.append(name + "_" + j)
                 cls.__final_deck[(name + "_" + j)] = [name, value, j]
         return cls.__final_deck
 
-    def shufle_deck(self):
+    @classmethod
+    def shufle_deck(cls):
         """ Эта функция возвращает уже перемешанную колоду карт.
         Случайно выбирается ключ и его значение и они удаляются из словаря,
         потом они снова добавляется в конец словаря"""
-        diction = self.__deck_cards_creator()
+        diction = cls.__deck_cards_creator()
         for el in random.sample(diction.keys(), 36):
             val = diction[el]
             del diction[el]
             diction[el] = val
         return diction
 
+    @classmethod
+    def trump_cards(cls):
+        return cls.__trump_list
+
 class User:
+    deck = Cards.shufle_deck()
+    trump_cards = Cards.trump_cards()
 
     def __init__(self):
         self.cards_user = {}
+
+    def afish_quant_cards_deck(self):
+        print(id(self.deck))
+        print(f"V kolode: {self.deck} cards")
+        return len(self.deck)
 
     def get_cards_user(self):
         return self.cards_user
@@ -43,10 +56,23 @@ class User:
     def set_cards(self, x, y):
         self.cards_user[x] = y
 
-    def hod(self, test_cards_user):
+    def __take_card_general(self,  max_card=6):
+        for card in random.sample(self.deck.keys(), (max_card - len(self.cards_user))):
+            val = self.deck[card]
+            del self.deck[card]
+            self.set_cards(card, val)
+            print(f"Вы взяли {card}")
+        return self.cards_user
+
+    def start_game_card_taken(self):
+        """ Начало игры. Раздача шести карт. Возвращает словарь """
+        cards_user = self.__take_card_general()
+        return cards_user
+
+    def hod(self):
         """ Ход одной картой на выбор игрока. Возвращает значение карты - список.
                       В клссе Round ее подхватывает метод turn  """
-        cards_in_nand = test_cards_user.keys()
+        cards_in_nand = self.cards_user.keys()
         print("Ваш ход. Карты в руке: ")
         for i in cards_in_nand:
             print(i)
@@ -55,8 +81,8 @@ class User:
         while card not in cards_in_nand:
             print("У вас нет такой карты. Напишите правильное название карты: ")
             card = input()
-        val = test_cards_user[card]
-        del test_cards_user[card]
+        val = self.cards_user[card]
+        del self.cards_user[card]
         return val
 
     def card_for_beat(self, card_oponent):
@@ -67,7 +93,15 @@ class User:
         print(self.cards_user.keys())
         if card in self.cards_user:
             val = self.cards_user[card]
-            if (card_oponent[2] == val[2]) or ( (int(card_oponent[1]) < int(val[1])) and int(val[1]) > 100):
+            if (card in self.trump_cards) and((card_oponent[0] + "_" + card_oponent[2]) in self.trump_cards):
+                res = int((card_oponent[1])-(int(val[1])))
+                if res < 0:
+                    del self.cards_user[card]
+                    return val
+            elif (card in self.trump_cards):
+                del self.cards_user[card]
+                return val
+            elif ((int(card_oponent[1]) - int(val[1])) < 0) and ((card_oponent[2]) == val[2]):
                 del self.cards_user[card]
                 return val
             else:
@@ -77,87 +111,60 @@ class User:
             print("У вас нет такой карты! Выберите карту снова: ")
             return self.card_for_beat(card_oponent)
 
-class AI:
-    pass
+    def turn(self):
+        """ Ход одной картой на выбор игрока. Возвращает значение карты - список.
+                      В клссе User ее родитель метод hod  """
+        x = self.hod()
+        return x
 
-class Round:
-    __deck = Cards()
-    __user = User()
-    __user2 = User()
-
-    def __init__(self):
-        self.deck = self.__deck.shufle_deck()
-        self.user_cards = self.__user.get_cards_user()
-        #Test
-        self.user2_cards = self.__user2.get_cards_user()
-
-    def afish_quant_cards_deck(self):
-        return len(self.deck)
-
-    def get_user1(self):
-        return self.__user
-
-    def get_user2(self):
-        return self.__user2
-
-    def __take_card_general(self, user, cards_user, max_card=6):
-        for card in random.sample(self.deck.keys(), (max_card - len(cards_user))):
-            val = self.deck[card]
-            del self.deck[card]
-            user.set_cards(card, val)
-            print(f"Вы взяли {card}")
-        return cards_user
-
-    def start_game_card_taken(self, user, cards_user):
-        """ Начало игры. Раздача шести карт. Возвращает словарь """
-        cards_user = self.__take_card_general(user, cards_user)
-        return cards_user
-
-    def take_cards(self, user, cards_user):
+    def take_cards(self):
         """ Подбор недостающих карт, если требуется"""
-        if len(cards_user) < 6:
-            print(f"Вы берете {6 - len(cards_user)} карты")
-            self.__take_card_general(user, cards_user)
-        elif len(cards_user) == 6:
+        if len(self.cards_user) < 6:
+            print(f"Вы берете {6 - len(self.cards_user)} карты")
+            self.__take_card_general()
+        elif len(self.cards_user) == 6:
             print("У вас 6 карт. Вы НЕ берете карты.")
         else:
             print("У Вас больше 6 карт. Вы НЕ берете карты")
 
-    def turn(self, user,  cards_user):
-        """ Ход одной картой на выбор игрока. Возвращает значение карты - список.
-                      В клссе User ее родитель метод hod  """
-        x = user.hod(cards_user)
-        return x
 
+
+class AI:
+    pass
+
+class Round:
+
+    def __init__(self):
+        self.user1 = User()
+        self.user2 = User()
+
+    def game(self):
+        print(d.user1.trump_cards)
+        print(d.user2.trump_cards)
+        print(d.user1.start_game_card_taken())
+        print(d.user2.start_game_card_taken())
+        print("--------------------------------")
+        print(d.user1.afish_quant_cards_deck())
+        print(d.user2.afish_quant_cards_deck())
+        print("--------------------------------")
+        d.user2.card_for_beat(d.user1.hod())
+        d.user1.take_cards()
+        d.user2.take_cards()
+        print("--------------------------------")
+        d.user1.afish_quant_cards_deck()
+        d.user2.afish_quant_cards_deck()
+        print("--------------------------------")
+        d.user1.card_for_beat(d.user2.hod())
+        d.user2.take_cards()
+        d.user1.take_cards()
+        print(d.user1.get_cards_user())
+        print(d.user2.get_cards_user())
+        print("--------------------------------")
+        print(d.user1.afish_quant_cards_deck())
+        print(d.user2.afish_quant_cards_deck())
 
 
 #TEST
 
 d = Round()
-user1 = d.get_user1()
-user2 = d.get_user2()
-cards1 = d.user_cards
-cards2 = d.user2_cards
-
-d.start_game_card_taken(user1, cards1)
-print("----------------------")
-d.start_game_card_taken(user2, cards2)
-print(d.afish_quant_cards_deck())
-print(d.user_cards)
-print("--------------------")
-print(d.user2_cards)
-print(d.turn(user1, cards1))
-print(d.turn(user2, cards2))
-print("--------------------")
-print(d.user_cards)
-print(d.user2_cards)
-d.take_cards(user1, cards1)
-d.take_cards(user2, cards2)
-print("--------------------")
-print("картой бить!!!")
-print(user1.card_for_beat(d.turn(user2, cards2)))
-print(user2.card_for_beat(d.turn(user1, cards1)), )
-print("--------------------")
-d.take_cards(user1, cards1)
-d.take_cards(user2, cards2)
-print(d.afish_quant_cards_deck())
+d.game()
