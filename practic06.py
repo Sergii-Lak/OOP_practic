@@ -56,13 +56,24 @@ class User:
     def set_cards(self, x, y):
         self.cards_user[x] = y
 
-    def __take_card_general(self,  max_card=6):
-        for card in random.sample(self.deck.keys(), (max_card - len(self.cards_user))):
+    def __for_take_card_general(self, diferance):
+        for card in random.sample(self.deck.keys(), diferance):
             val = self.deck[card]
             del self.deck[card]
             self.set_cards(card, val)
             print(f"Вы взяли {card}")
         return self.cards_user
+
+    def __take_card_general(self,  max_card=6):
+        diferance = 0
+        if bool(self.deck) == False:
+            self.__for_take_card_general(diferance)
+        if len(self.deck) < (max_card - len(self.cards_user)):
+            diferance = len(self.deck)
+            self.__for_take_card_general(diferance)
+        if len(self.deck) >= (max_card - len(self.cards_user)):
+            diferance = (max_card - len(self.cards_user))
+            self.__for_take_card_general(diferance)
 
     def start_game_card_taken(self):
         """ Начало игры. Раздача шести карт. Возвращает словарь """
@@ -111,11 +122,7 @@ class User:
             print("У вас нет такой карты! Выберите карту снова: ")
             return self.card_for_beat(card_oponent)
 
-    def turn(self):
-        """ Ход одной картой на выбор игрока. Возвращает значение карты - список.
-                      В клссе User ее родитель метод hod  """
-        x = self.hod()
-        return x
+
 
     def take_cards(self):
         """ Подбор недостающих карт, если требуется"""
@@ -139,32 +146,32 @@ class Round:
         self.user2 = User()
 
     def game(self):
-        print(d.user1.trump_cards)
-        print(d.user2.trump_cards)
-        print(d.user1.start_game_card_taken())
-        print(d.user2.start_game_card_taken())
+        print(self.user1.trump_cards)
+        print(self.user2.trump_cards)
+        print(self.user1.start_game_card_taken())
+        print(self.user2.start_game_card_taken())
         print("--------------------------------")
-        print(d.user1.afish_quant_cards_deck())
-        print(d.user2.afish_quant_cards_deck())
+        print(self.user1.afish_quant_cards_deck())
+        print(self.user2.afish_quant_cards_deck())
         print("--------------------------------")
-        d.user2.card_for_beat(d.user1.hod())
-        d.user1.take_cards()
-        d.user2.take_cards()
+        self.user2.card_for_beat(self.user1.hod())
+        self.user1.take_cards()
+        self.user2.take_cards()
         print("--------------------------------")
-        d.user1.afish_quant_cards_deck()
-        d.user2.afish_quant_cards_deck()
+        self.user1.afish_quant_cards_deck()
+        self.user2.afish_quant_cards_deck()
         print("--------------------------------")
-        d.user1.card_for_beat(d.user2.hod())
-        d.user2.take_cards()
-        d.user1.take_cards()
-        print(d.user1.get_cards_user())
-        print(d.user2.get_cards_user())
+        self.user1.card_for_beat(self.user2.hod())
+        self.user2.take_cards()
+        self.user1.take_cards()
+        print(self.user1.get_cards_user())
+        print(self.user2.get_cards_user())
         print("--------------------------------")
-        print(d.user1.afish_quant_cards_deck())
-        print(d.user2.afish_quant_cards_deck())
+        print(self.user1.afish_quant_cards_deck())
+        print(self.user2.afish_quant_cards_deck())
 
 
 #TEST
 
-d = Round()
-d.game()
+#d = Round()
+#d.game()
